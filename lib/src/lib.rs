@@ -1,22 +1,23 @@
 use alloy_sol_types::sol;
 
 sol! {
-    /// The public values encoded as a struct that can be easily deserialized inside Solidity.
-    struct PublicValuesStruct {
-        uint32 n;
-        uint32 a;
-        uint32 b;
+    struct ShufflePublicValues {
+        // Hash of the input deck (to commit to canonical starting state)
+        bytes initialDeckHash;
+        // Hash of the final shuffled deck (to prove correctness)
+        bytes shuffledDeckHash;
+        // The seed used for randomness
+        uint64 seed;
     }
 }
 
-/// Compute the n'th fibonacci number (wrapping around on overflows), using normal Rust code.
-pub fn fibonacci(n: u32) -> (u32, u32) {
-    let mut a = 0u32;
-    let mut b = 1u32;
-    for _ in 0..n {
-        let c = a.wrapping_add(b);
-        a = b;
-        b = c;
+/// Deterministic Fisher–Yates shuffle.
+pub fn shuffle(deck: &mut [u8], seed: u64) {
+    let mut state = seed;
+    for i in (1..deck.len()).rev() {
+        // simple LCG PRNG
+        state = state.wrapping_mul(6364136223846793005).wrapping_add(1);
+        let j = (state % (i as u64 + 1)) as usize;
+        deck.swap(i, j);
     }
-    (a, b)
 }

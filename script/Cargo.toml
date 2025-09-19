@@ -1,6 +1,6 @@
 [package]
 version = "0.1.0"
-name = "fibonacci-script"
+name = "shuffle-script"
 edition = "2021"
 default-run = "fibonacci"
 
@@ -24,7 +24,7 @@ clap = { version = "4.0", features = ["derive", "env"] }
 tracing = "0.1.40"
 hex = "0.4.3"
 alloy-sol-types = { workspace = true }
-fibonacci-lib = { path = "../lib" }
+shuffle-lib = { path = "../lib" }
 dotenv = "0.15.0"
 
 [build-dependencies]

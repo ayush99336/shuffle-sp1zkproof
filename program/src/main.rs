@@ -9,22 +9,35 @@
 sp1_zkvm::entrypoint!(main);
 
 use alloy_sol_types::SolType;
-use fibonacci_lib::{fibonacci, PublicValuesStruct};
+use sha2::{Digest, Sha256};
+use shuffle_lib::{shuffle, ShufflePublicValues};
 
 pub fn main() {
-    // Read an input to the program.
-    //
-    // Behind the scenes, this compiles down to a custom system call which handles reading inputs
-    // from the prover.
-    let n = sp1_zkvm::io::read::<u32>();
+    // Read seed
+    let seed = sp1_zkvm::io::read::<u64>();
 
-    // Compute the n'th fibonacci number using a function from the workspace lib crate.
-    let (a, b) = fibonacci(n);
+    // Construct canonical deck
+    let mut deck: Vec<u8> = (0..108).collect(); // 108 UNO cards, or match your PACK_OF_CARDS
 
-    // Encode the public values of the program.
-    let bytes = PublicValuesStruct::abi_encode(&PublicValuesStruct { n, a, b });
+    // Hash original deck
+    let mut hasher = Sha256::new();
+    hasher.update(&deck);
+    let initial_hash = hasher.finalize().to_vec();
 
-    // Commit to the public values of the program. The final proof will have a commitment to all the
-    // bytes that were committed to.
+    // Shuffle deterministically
+    shuffle(&mut deck, seed);
+
+    // Hash shuffled deck
+    let mut hasher2 = Sha256::new();
+    hasher2.update(&deck);
+    let shuffled_hash = hasher2.finalize().to_vec();
+
+    // Commit public values
+    let public = ShufflePublicValues {
+        initialDeckHash: initial_hash.into(),
+        shuffledDeckHash: shuffled_hash.into(),
+        seed,
+    };
+    let bytes = ShufflePublicValues::abi_encode(&public);
     sp1_zkvm::io::commit_slice(&bytes);
 }

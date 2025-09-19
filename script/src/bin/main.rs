@@ -12,11 +12,12 @@
 
 use alloy_sol_types::SolType;
 use clap::Parser;
-use fibonacci_lib::PublicValuesStruct;
+use shuffle_lib::ShufflePublicValues;
+
 use sp1_sdk::{include_elf, ProverClient, SP1Stdin};
 
 /// The ELF (executable and linkable format) file for the Succinct RISC-V zkVM.
-pub const FIBONACCI_ELF: &[u8] = include_elf!("fibonacci-program");
+pub const SHUFFLE_ELF: &[u8] = include_elf!("shuffle-program");
 
 /// The arguments for the command.
 #[derive(Parser, Debug)]
@@ -28,8 +29,8 @@ struct Args {
     #[arg(long)]
     prove: bool,
 
-    #[arg(long, default_value = "20")]
-    n: u32,
+    #[arg(long, default_value = "12345")]
+    seed: u64,
 }
 
 fn main() {
@@ -50,32 +51,32 @@ fn main() {
 
     // Setup the inputs.
     let mut stdin = SP1Stdin::new();
-    stdin.write(&args.n);
+    stdin.write(&args.seed);
 
-    println!("n: {}", args.n);
+    println!("seed: {}", args.seed);
 
     if args.execute {
         // Execute the program
-        let (output, report) = client.execute(FIBONACCI_ELF, &stdin).run().unwrap();
+        let (output, report) = client.execute(SHUFFLE_ELF, &stdin).run().unwrap();
         println!("Program executed successfully.");
 
         // Read the output.
-        let decoded = PublicValuesStruct::abi_decode(output.as_slice()).unwrap();
-        let PublicValuesStruct { n, a, b } = decoded;
-        println!("n: {}", n);
-        println!("a: {}", a);
-        println!("b: {}", b);
+        let decoded = ShufflePublicValues::abi_decode(output.as_slice()).unwrap();
+        let ShufflePublicValues {
+            initialDeckHash,
+            shuffledDeckHash,
+            seed,
+        } = decoded;
 
-        let (expected_a, expected_b) = fibonacci_lib::fibonacci(n);
-        assert_eq!(a, expected_a);
-        assert_eq!(b, expected_b);
-        println!("Values are correct!");
+        println!("Initial Deck Hash: {:?}", initialDeckHash);
+        println!("Shuffled Deck Hash: {:?}", shuffledDeckHash);
+        println!("Seed: {}", seed);
 
         // Record the number of cycles executed.
         println!("Number of cycles: {}", report.total_instruction_count());
     } else {
         // Setup the program for proving.
-        let (pk, vk) = client.setup(FIBONACCI_ELF);
+        let (pk, vk) = client.setup(SHUFFLE_ELF);
 
         // Generate the proof
         let proof = client
