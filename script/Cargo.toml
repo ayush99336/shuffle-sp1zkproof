@@ -2,10 +2,10 @@
 version = "0.1.0"
 name = "shuffle-script"
 edition = "2021"
-default-run = "fibonacci"
+default-run = "shuffle"
 
 [[bin]]
-name = "fibonacci"
+name = "shuffle"
 path = "src/bin/main.rs"
 
 [[bin]]
