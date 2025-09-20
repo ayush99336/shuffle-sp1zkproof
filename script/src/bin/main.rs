@@ -29,10 +29,10 @@ struct Args {
     #[arg(long)]
     prove: bool,
 
-    #[arg(long, default_value = "12345")]
+    #[arg(long, default_value = "1235")]
     seed: u64,
 
-    #[arg(long, default_value = "2")]
+    #[arg(long, default_value = "3")]
     players: u32,
 
     #[arg(long, default_value = "7")]
