@@ -34,7 +34,7 @@ pub fn index_to_card(index: u8) -> &'static str {
     PACK_OF_CARDS[index as usize]
 }
 
-/// Deterministic Fisher–Yates shuffle
+/// Deterministic Fisher–Yates shuffle - compatible with JavaScript expectations
 pub fn shuffle(deck: &mut [u8], seed: u64) {
     let mut state = seed;
     for i in (1..deck.len()).rev() {
@@ -61,7 +61,34 @@ pub fn distribute_cards(deck: &[u8], num_players: u32, cards_per_player: u32) ->
     players
 }
 
-/// to map indexes to JavaScript-compatible card strings
+/// Combined shuffle and deal operation - the main function for card games
+/// This function creates a deck, shuffles it, and distributes cards to players in one operation
+pub fn shuffle_and_deal(
+    seed: u64,
+    num_players: u32,
+    cards_per_player: u32,
+) -> (Vec<Vec<u8>>, Vec<u8>) {
+    // Create canonical UNO deck (108 cards as indexes 0-107)
+    let mut deck: Vec<u8> = (0..108).collect();
+
+    // Shuffle the deck deterministically
+    shuffle(&mut deck, seed);
+
+    // Distribute cards to players
+    let distributed_cards = distribute_cards(&deck, num_players, cards_per_player);
+
+    // Calculate remaining cards for draw pile
+    let total_dealt = (num_players * cards_per_player) as usize;
+    let remaining_cards = if total_dealt < deck.len() {
+        deck[total_dealt..].to_vec()
+    } else {
+        Vec::new()
+    };
+
+    (distributed_cards, remaining_cards)
+}
+/// Convert card indexes to JavaScript-compatible format
+/// This function maps our u8 indexes to the exact string format your JavaScript expects
 pub fn convert_indexes_to_js_cards(card_indexes: &[u8]) -> Vec<String> {
     card_indexes
         .iter()
@@ -69,7 +96,8 @@ pub fn convert_indexes_to_js_cards(card_indexes: &[u8]) -> Vec<String> {
         .collect()
 }
 
-/// Convert distributed card indexes to JavaScript format giving nested structure
+/// Convert distributed card indexes to JavaScript format
+/// Returns a nested structure matching your JavaScript game expectations
 pub fn convert_distributed_cards_to_js(distributed_cards: &[Vec<u8>]) -> Vec<Vec<String>> {
     distributed_cards
         .iter()
@@ -77,7 +105,8 @@ pub fn convert_distributed_cards_to_js(distributed_cards: &[Vec<u8>]) -> Vec<Vec
         .collect()
 }
 
-//Future use cases
+// ==== COLLEAGUE'S ADVANCED UNO IMPLEMENTATION ====
+// (Keeping this for future use, but using simpler approach for JavaScript compatibility)
 
 use std::fmt;
 
