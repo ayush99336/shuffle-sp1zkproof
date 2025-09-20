@@ -31,6 +31,12 @@ struct Args {
 
     #[arg(long, default_value = "12345")]
     seed: u64,
+
+    #[arg(long, default_value = "2")]
+    players: u32,
+
+    #[arg(long, default_value = "7")]
+    cards_per_player: u32,
 }
 
 fn main() {
@@ -52,8 +58,12 @@ fn main() {
     // Setup the inputs.
     let mut stdin = SP1Stdin::new();
     stdin.write(&args.seed);
+    stdin.write(&args.players);
+    stdin.write(&args.cards_per_player);
 
     println!("seed: {}", args.seed);
+    println!("players: {}", args.players);
+    println!("cards per player: {}", args.cards_per_player);
 
     if args.execute {
         // Execute the program
@@ -65,12 +75,18 @@ fn main() {
         let ShufflePublicValues {
             initialDeckHash,
             shuffledDeckHash,
+            playerCardHashes,
             seed,
+            numPlayers,
+            cardsPerPlayer,
         } = decoded;
 
         println!("Initial Deck Hash: {:?}", initialDeckHash);
         println!("Shuffled Deck Hash: {:?}", shuffledDeckHash);
         println!("Seed: {}", seed);
+        println!("Number of players: {}", numPlayers);
+        println!("Cards per player: {}", cardsPerPlayer);
+        println!("Player card hashes: {:?}", playerCardHashes);
 
         // Record the number of cycles executed.
         println!("Number of cycles: {}", report.total_instruction_count());

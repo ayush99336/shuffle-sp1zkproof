@@ -46,6 +46,9 @@ struct SP1ShuffleProofFixture {
     initial_deck_hash: String,
     shuffled_deck_hash: String,
     seed: u64,
+    num_players: u32,
+    cards_per_player: u32,
+    player_card_hashes: Vec<String>,
     vkey: String,
     public_values: String,
     proof: String,
@@ -92,13 +95,21 @@ fn create_proof_fixture(
     let ShufflePublicValues {
         initialDeckHash,
         shuffledDeckHash,
+        playerCardHashes,
         seed,
+        numPlayers,
+        cardsPerPlayer,
     } = ShufflePublicValues::abi_decode(bytes).unwrap();
 
     let fixture = SP1ShuffleProofFixture {
         initial_deck_hash: format!("0x{}", hex::encode(initialDeckHash)),
         shuffled_deck_hash: format!("0x{}", hex::encode(shuffledDeckHash)),
         seed,
+        num_players: numPlayers,
+        cards_per_player: cardsPerPlayer,
+        player_card_hashes: playerCardHashes.iter()
+            .map(|hash| format!("0x{}", hex::encode(hash)))
+            .collect(),
         vkey: vk.bytes32().to_string(),
         public_values: format!("0x{}", hex::encode(bytes)),
         proof: format!("0x{}", hex::encode(proof.bytes())),
